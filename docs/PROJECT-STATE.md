@@ -1,11 +1,11 @@
 # Project State — Toolchain Verification
 
-**Status:** Prompt 02 is **BLOCKED / PENDING HUMAN VALIDATION**. No project was opened or created, and no installation, download, license acceptance, or editor configuration was performed.
+**Status:** Prompt 02 remains **BLOCKED / PENDING HUMAN VALIDATION**. On 2026-10-01, after the user authorized project creation using the installed Unity 6.6 Editor, a prompt-03 bootstrap was attempted but **BLOCKED before project initialization completed**. No license acceptance or purchase was performed.
 
 ## Project
 
 - **Project path:** `C:\Source\open-world-video-game`
-- **Unity project structure:** Missing (`Assets/`, `Packages/`, and `ProjectSettings/` are absent). There is no project on which to verify opening, render pipeline selection, or package installation.
+- **Unity project structure:** Partial bootstrap only: `Assets/` exists but is empty, `ProjectSettings/` was generated, and `Packages/` is absent. Treat this as **not yet a usable/opened Unity project**; no scene, URP asset, package manifest, or build exists.
 - **Game baseline:** See [GAME-BRIEF.md](GAME-BRIEF.md); prompt 01 passed in commit `973e998`.
 
 ## Toolchain facts (observed 2026-10-01)
@@ -14,11 +14,18 @@
 |---|---|---|
 | Unity Hub | **Installed**, version `3.22.0` | Found at `C:\Program Files\Unity Hub\Unity Hub.exe`. Account/license status was not inspected. |
 | Unity Editor | **Installed**, version `6000.6.3f1` (`6000.6.3.4577518`) | Unity 6.6 Update, production-ready. It is a technically viable new-project choice; it is not LTS and has a shorter support window. |
-| Unity 6.3 LTS | **Not installed** | Prompt 02's recommended LTS default is `6000.3.24f1` (released 2026-09-10, latest 6000.3 patch found in the official archive). Install it only if retaining the LTS default; do not uninstall or upgrade 6000.6.3f1. |
+| Unity 6.3 LTS | **Not installed / not selected** | Prompt 02 proposed `6000.3.24f1` as its LTS default. The user chose to proceed with the already-installed Unity 6.6 Update for this new project, so no additional Editor installation is currently needed. |
 | Windows Build Support | **Installed for 6000.6.3f1** | `Editor\Data\PlaybackEngines\windowsstandalonesupport` exists. Presence for `6000.3` is not verified. |
 | C# IDE | **Installed**, Visual Studio Community 2026 `18.10.3` (`18.10.12224.181`) | The Unity game-development workload was not detected by Visual Studio Installer metadata. Editing a Unity script and Unity IDE integration have **not** been validated. VS Code is present, but its version/extensions could not be read because its CLI returned an access-denied error while trying to create the user settings directory. |
 | Git | **Installed**, `2.54.0.windows.1` | Current branch: `codex/tiny-fantasy-island`, tracking `origin/codex/tiny-fantasy-island`. |
-| Render pipeline | **Not configured** | No Unity project exists. **URP** remains the proposed pipeline for a new project; Unity’s 6000.3 docs list URP `17.3` as an Editor-matched core package. |
+| Render pipeline | **Not configured** | **URP** is the selected pipeline for the new project; Unity’s 6000.6 docs identify URP `17.6` as an Editor-matched core package. |
+
+## Bootstrap attempt (2026-10-01)
+
+- Used the installed Unity `6000.6.3f1` Editor's documented `-createProject` option at the repository root. Unity created `ProjectSettings/` and an empty `Assets/`, but did not create `Packages/` or finish opening the project.
+- The log `C:\Source\open-world-video-game\UnityCreate.log` records `LicenseClient-dante` IPC connection refusals and licensing initialization timeouts. The Editor process was stopped after it remained waiting; no files were deleted.
+- **Result:** no project-open, URP, scene-reference, compilation, or standalone-build check passed. No gameplay or scene content was created.
+- **Git ignore correction:** `.gitignore` no longer excludes Unity `.meta` files, `.obj` source assets, or the Unity `Packages/` manifest/lock files; Unity caches and build folders are ignored.
 
 ## Package Manager compatibility
 
@@ -39,24 +46,24 @@ URP is the proposed render pipeline. It is an Editor-matched core package (`17.3
 - [x] Windows build support confirmed for installed Editor `6000.6.3f1` only.
 - [x] Visual Studio and Git versions identified.
 - [x] Official Unity Package Manager compatibility checked for both proposed `6000.3` LTS and installed `6000.6` Editor.
-- [ ] Project opens — **PENDING HUMAN VALIDATION**; no Unity project exists.
+- [ ] Project opens — **BLOCKED / PENDING HUMAN VALIDATION**; only partial bootstrap files exist, and Editor licensing initialization did not complete.
 - [ ] IDE edits a Unity C# script — **PENDING HUMAN VALIDATION**; Unity workload/integration not verified.
 - [ ] Windows build support exists for Unity `6000.3` — **PENDING HUMAN VALIDATION**.
 - [ ] Needed compatible packages are visible/available in Package Manager — official compatible sources are verified for both editor lines, but actual project Package Manager availability is **PENDING HUMAN VALIDATION**.
-- [ ] Unity Hub account/license/terms status — **PENDING HUMAN VALIDATION**; no license acceptance performed.
+- [ ] Unity Hub account/license/terms status — **PENDING HUMAN VALIDATION**; Editor reported Licensing Client IPC/timeouts; no license acceptance performed.
 
-## Human setup required before prompt 03
+## Human setup required to resume prompt 03
 
-1. Choose the engine track for the new project: the guide's recommended **Unity 6.3 LTS `6000.3.24f1`** (install it with Windows Build Support if you want the LTS default), or the already-installed **Unity 6.6 `6000.6.3f1`** (no additional Editor install needed; shorter support window). Keep both editors side by side if needed.
-2. Verify Visual Studio is selected as Unity’s external script editor and can open/edit a generated C# script. The Unity/game-development workload was not detected by Visual Studio Installer metadata; install it only if this manual check fails or its Unity support is absent.
-3. Open Unity Hub and verify the account/license prompt. Accept applicable license/terms yourself; no purchase is recommended or authorized here.
-4. Create/open the new URP project using the chosen Editor and verify it opens and Package Manager lists the compatible package versions for that Editor. Keep the checks pending until confirmed.
+1. In Unity Hub, sign in and complete any eligible license activation/terms step yourself. Do not purchase anything for this project.
+2. Once licensing is active, resume prompt 03: finish creating/opening the Unity 6.6 URP project, then verify Package Manager and Editor startup.
+3. Verify Visual Studio is selected as Unity’s external script editor and can open/edit a generated C# script. The Unity/game-development workload was not detected by Visual Studio Installer metadata; install it only if this manual check fails or its Unity support is absent.
+4. Keep all checks pending until confirmed.
 
 ## Changes and next phase
 
-- **Files changed this phase:** `docs/PROJECT-STATE.md` only.
-- **No gameplay code or Unity project files changed.**
-- **Next eligible phase:** Prompt 03 remains blocked until the missing editor/workload setup and required human validations above are complete.
+- **Files changed this phase:** `.gitignore` and `docs/PROJECT-STATE.md`. The failed bootstrap left an incomplete, untracked `ProjectSettings/` directory; it is not a usable Unity project and must not be treated as a completed scaffold.
+- **No gameplay code, scene, or build was created.**
+- **Next eligible phase:** Prompt 03 remains blocked until Unity Hub licensing is active; then finish the scaffold and verify the required checks above.
 
 ## Official references
 
